@@ -24,17 +24,17 @@ args = parser.parse_args()
 
 
 
-# trial name + video path
+# trial name + video path + output csv path
 trial_name = args.trial_name
 trial_date = '../' + args.trial_date
 vid_path = trial_date + '/' + trial_name + '/' +  trial_name + '_cropped.mp4'
-vid_cap = cv2.VideoCapture(vid_path)
-
-
 output_csv_path = trial_date + '/' + trial_name + '/tracked_data.csv'
+
 mouse_positions = []
 
-print("opening_video "+ vid_path)
+vid_cap = cv2.VideoCapture(vid_path)
+print("opened video:  "+ vid_path)
+
 total_frames = int(vid_cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
 counter = 0 
@@ -57,10 +57,9 @@ while vid_cap.isOpened():
     
     # run inference
     results = model(frame)
-    infer_data = results.pandas().xyxy[0]
-    # print(results)    
+    infer_data = results.pandas().xyxy[0]    
     mouse_pos = infer_data[infer_data.name=='mouse']
-    # print(mouse_pos)
+    
     
     # append frame number and center of bounding box
     mouse_pos.insert(0, 'frame_num', counter)
@@ -70,13 +69,14 @@ while vid_cap.isOpened():
     
     mouse_positions.append(mouse_pos)
         
+        ## draw circle at centroid of bounding box
         # try:
         #     if(mouse_pos['confidence'].max()<0.5):
         #         print("no mouse")
                         
         #     else:
         #         mouse_x_center = int((mouse_pos.xmin + mouse_pos.xmax)/ 2 )
-        #         mouse_y_center = int((mouse_pos.ymin + mouse_pos.ymax) / 2 )                
+        #         mouse_y_center = int((mouse_pos.ymin + mouse_pos.ymax) / 2 )               
         #         print("mouse_detected")
 
 
@@ -89,7 +89,7 @@ while vid_cap.isOpened():
 
         # Display the frame
     
-    
+    # occasionally display frame and tracking info
     if(counter%100==0):        
         cv2.imshow('Frame', frame)
         print(mouse_pos)
@@ -101,7 +101,7 @@ while vid_cap.isOpened():
     
     
     
-
+# write mouse positions to csv
 if mouse_positions:
     all_mouse_positions = pd.concat(mouse_positions, ignore_index=True)
     all_mouse_positions.to_csv(output_csv_path, index=False)

@@ -10,7 +10,7 @@ random.seed(seed_value)
 
 
 # Argument parsing
-parser = argparse.ArgumentParser(description="Extract N random frames from a video.")
+parser = argparse.ArgumentParser(description="Extract N random frames from a video for RoboFlow workflow")
 parser.add_argument("trial_name", help="Name of the trial")
 args = parser.parse_args()
 
